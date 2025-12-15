@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import SearchForm from "./components/SearchForm";
 import SaveButton from "./components/SaveButton";
 import BookmarksList from "./components/BookmarksList";
+import SortDropdown from "./components/SortDropdown";
+import { getThreatColor, getThreatLabel } from "@/lib/threatColors";
 
 export const revalidate = 300;
 
@@ -37,7 +39,7 @@ async function fetchData(view: ViewType, limit: number) {
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string; view?: string; q?: string }>;
+  searchParams?: Promise<{ page?: string; view?: string; q?: string; sort?: string }>;
 }) {
   const params = await searchParams;
   const pageSize = 5;
@@ -52,6 +54,10 @@ export default async function Page({
   
   const queryParam = params?.q;
   const searchQuery = (Array.isArray(queryParam) ? queryParam[0] : queryParam)?.toLowerCase().trim() ?? "";
+  
+  const sortParam = params?.sort;
+  const sortRaw = Array.isArray(sortParam) ? sortParam[0] : sortParam;
+  const sortBy = sortRaw === "threat" || sortRaw === "reporter" || sortRaw === "url" ? sortRaw : "date";
   
   // For bookmarks view, render client component
   if (view === "bookmarks") {
@@ -118,6 +124,22 @@ export default async function Page({
     });
   }
   
+  // Sort items based on selected option
+  items.sort((a, b) => {
+    switch (sortBy) {
+      case "date":
+        return new Date(b.date_added ?? 0).getTime() - new Date(a.date_added ?? 0).getTime();
+      case "threat":
+        return (a.threat ?? "").localeCompare(b.threat ?? "");
+      case "reporter":
+        return (a.reporter ?? "").localeCompare(b.reporter ?? "");
+      case "url":
+        return (a.url ?? "").localeCompare(b.url ?? "");
+      default:
+        return 0;
+    }
+  });
+  
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
   const displayItems = items.slice(start, end);
@@ -152,16 +174,23 @@ export default async function Page({
       </div>
 
       {/* Page Indicator */}
-      <div className="mb-4 text-sm text-gray-600">
-        {searchQuery && (
-          <span className="mr-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-            Searching: "{searchQuery}"
-          </span>
-        )}
-        Page {page} {totalPages > 0 && `of ~${totalPages}`} • Showing {displayItems.length} of {items.length} entries
-        {searchQuery && items.length === 0 && (
-          <span className="ml-2 text-orange-600">No matches found</span>
-        )}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          {searchQuery && (
+            <span className="mr-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+              Searching: "{searchQuery}"
+            </span>
+          )}
+          Page {page} {totalPages > 0 && `of ~${totalPages}`} • Showing {displayItems.length} of {items.length} entries
+          {searchQuery && items.length === 0 && (
+            <span className="ml-2 text-orange-600">No matches found</span>
+          )}
+        </div>
+        
+        {/* Sort Dropdown */}
+        <Suspense fallback={<div className="h-8 w-48 bg-gray-100 rounded animate-pulse"></div>}>
+          <SortDropdown currentSort={sortBy} />
+        </Suspense>
       </div>
 
       {displayItems.length === 0 ? (
@@ -193,7 +222,12 @@ export default async function Page({
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 mt-3">
-                <div><strong>Threat:</strong> {u.threat ?? "—"}</div>
+                <div>
+                  <strong>Threat:</strong>{" "}
+                  <span className={`px-2 py-0.5 text-xs rounded border ${getThreatColor(u.threat)}`}>
+                    {getThreatLabel(u.threat)}
+                  </span>
+                </div>
                 <div><strong>Reporter:</strong> {u.reporter ?? "—"}</div>
                 <div><strong>First seen:</strong> {u.dateadded ?? u.date_added ?? "—"}</div>
                 <div><strong>Blacklists:</strong> {u.blacklists?.spamhaus_dbl ?? "—"}</div>

@@ -53,10 +53,10 @@ export default function SaveButton({ url, threat, reporter, date_added, url_stat
         setSaved(true);
         setShowCategoryModal(false);
         setTimeout(() => setSaved(false), 2000);
-      } else if (res.status === 409) {
-        alert("URL already bookmarked");
       } else {
-        alert("Failed to save bookmark");
+        const data = await res.json();
+        const errorMessage = data.error || "Failed to save bookmark";
+        alert(errorMessage);
       }
     } catch (error) {
       alert("Error saving bookmark");

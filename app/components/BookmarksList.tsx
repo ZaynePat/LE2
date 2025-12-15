@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getThreatColor, getThreatLabel } from "@/lib/threatColors";
 
 interface Bookmark {
   id: number;
@@ -260,7 +261,10 @@ export default function BookmarksList() {
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 mt-3">
               <div>
-                <strong>Threat:</strong> {bookmark.threat ?? "—"}
+                <strong>Threat:</strong>{" "}
+                <span className={`px-2 py-0.5 text-xs rounded border ${getThreatColor(bookmark.threat)}`}>
+                  {getThreatLabel(bookmark.threat)}
+                </span>
               </div>
               <div>
                 <strong>Reporter:</strong> {bookmark.reporter ?? "—"}

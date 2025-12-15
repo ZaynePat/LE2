@@ -1,8 +1,32 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, getClientIP } from '@/lib/rateLimiter';
 
 export const revalidate = 300;
 
+// 10 requests per minute per IP
+const limiter = rateLimit({ maxRequests: 10, windowMs: 60000 });
+
 export async function GET(request: Request) {
+  // Check rate limit
+  const clientIP = getClientIP(request);
+  const { allowed, remaining, resetTime } = limiter.check(clientIP);
+
+  if (!allowed) {
+    const waitSeconds = Math.ceil((resetTime - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: `Rate limit exceeded. Try again in ${waitSeconds} seconds.` },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': '10',
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': resetTime.toString(),
+          'Retry-After': waitSeconds.toString(),
+        },
+      }
+    );
+  }
+
   const authKey = process.env.URLHAUS_AUTH_KEY;
   if (!authKey) {
     return NextResponse.json({ error: 'Missing URLHAUS_AUTH_KEY' }, { status: 500 });
@@ -35,6 +59,9 @@ export async function GET(request: Request) {
   return NextResponse.json(data, {
     headers: {
       'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'X-RateLimit-Limit': '10',
+      'X-RateLimit-Remaining': remaining.toString(),
+      'X-RateLimit-Reset': resetTime.toString(),
     },
   });
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
+import { validateURL, sanitizeURL } from "@/lib/urlValidator";
 
 export async function GET() {
   try {
@@ -24,13 +25,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
+    // Validate URL
+    const validation = validateURL(url);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize and normalize URL
+    const sanitizedUrl = sanitizeURL(url);
+
+    // Check for duplicates (case-insensitive)
+    const existing = db
+      .prepare("SELECT id FROM bookmarks WHERE LOWER(url) = LOWER(?)")
+      .get(sanitizedUrl);
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "This URL is already bookmarked" },
+        { status: 409 }
+      );
+    }
+
     const stmt = db.prepare(`
       INSERT INTO bookmarks (url, threat, reporter, date_added, status, tags, notes, category_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
-      url,
+      sanitizedUrl,
       threat || null,
       reporter || null,
       date_added || null,
@@ -47,7 +72,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     if (error.message.includes("UNIQUE constraint")) {
       return NextResponse.json(
-        { error: "URL already bookmarked" },
+        { error: "This URL is already bookmarked" },
         { status: 409 }
       );
     }

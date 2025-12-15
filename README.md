@@ -57,6 +57,40 @@ URLHAUS_AUTH_KEY=YOUR-AUTH-KEY-HERE
 - The proxy route is at `/api/urlhaus/recent` and forwards to `https://urlhaus-api.abuse.ch/v1/payloads/recent/` with the required `Auth-Key` header.
 - The homepage renders the most recent items using server-side fetch with caching.
 
+## Security Features
+
+### URL Validation
+All bookmarked URLs are validated to ensure data quality and security:
+- **Format validation**: Must be valid HTTP/HTTPS URLs
+- **Protocol check**: Only HTTP and HTTPS protocols allowed
+- **Length limits**: Maximum 2048 characters
+- **Duplicate detection**: Case-insensitive check prevents duplicate URLs
+- **Normalization**: URLs are sanitized and normalized before storage
+  - Hostnames converted to lowercase
+  - Trailing slashes removed
+  - Whitespace trimmed
+
+**Error messages returned:**
+- "URL cannot be empty"
+- "Invalid URL format"
+- "Only HTTP and HTTPS protocols are supported"
+- "This URL is already bookmarked"
+
+### API Rate Limiting
+The URLhaus proxy endpoint is protected with rate limiting:
+- **10 requests per minute** per IP address
+- Returns HTTP 429 with `Retry-After` header when exceeded
+- Automatic cleanup of expired entries
+- Rate limit headers included in all responses:
+  - `X-RateLimit-Limit`: Maximum requests allowed
+  - `X-RateLimit-Remaining`: Requests remaining in current window
+  - `X-RateLimit-Reset`: Timestamp when the limit resets
+
+**Configuration:** Adjust limits in [lib/rateLimiter.ts](lib/rateLimiter.ts):
+```typescript
+const limiter = rateLimit({ maxRequests: 10, windowMs: 60000 });
+```
+
 ### Optional base path
 If you deploy behind a base path, set:
 
