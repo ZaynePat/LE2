@@ -20,7 +20,51 @@
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at 20% 20%, #e6f0ff 0, #f7fbff 25%, #ffffff 60%),
+    radial-gradient(circle at 80% 0%, #fce7f3 0, #ffffff 40%),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+}
+
+* {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.card-shell {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+}
+
+.hero-panel {
+  background: linear-gradient(120deg, #0f172a, #111827, #0b1224);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+  border-radius: 18px;
+}
+
+.pill-toggle {
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.pill-toggle a {
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 600;
+}
+
+.muted-label {
+  color: #4b5563;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-size: 12px;
 }

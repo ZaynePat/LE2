@@ -213,7 +213,7 @@ export default function BookmarksList() {
     const isEditing = editing === bookmark.id;
 
     return (
-      <div key={bookmark.id} className="border rounded-lg p-4 bg-gray-50">
+      <div key={bookmark.id} className="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
         {isEditing ? (
           <div className="space-y-3">
             <div>
@@ -259,32 +259,35 @@ export default function BookmarksList() {
                 {bookmark.status ?? "unknown"}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 mt-3">
-              <div>
-                <strong>Threat:</strong>{" "}
+            <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 mt-3">
+              <div className="flex items-center gap-2">
+                <span className="muted-label">Threat</span>
                 <span className={`px-2 py-0.5 text-xs rounded border ${getThreatColor(bookmark.threat)}`}>
                   {getThreatLabel(bookmark.threat)}
                 </span>
               </div>
-              <div>
-                <strong>Reporter:</strong> {bookmark.reporter ?? "—"}
+              <div className="flex items-center gap-2">
+                <span className="muted-label">Reporter</span>
+                <span>{bookmark.reporter ?? "—"}</span>
               </div>
-              <div>
-                <strong>First seen:</strong> {bookmark.date_added ?? "—"}
+              <div className="flex items-center gap-2">
+                <span className="muted-label">First seen</span>
+                <span>{bookmark.date_added ?? "—"}</span>
               </div>
-              <div>
-                <strong>Bookmarked:</strong> {new Date(bookmark.created_at).toLocaleDateString()}
+              <div className="flex items-center gap-2">
+                <span className="muted-label">Bookmarked</span>
+                <span>{new Date(bookmark.created_at).toLocaleDateString()}</span>
               </div>
             </div>
             {bookmark.notes && (
-              <div className="mt-2 p-2 bg-yellow-50 rounded text-sm">
+              <div className="mt-2 p-2 bg-amber-50 border border-amber-100 rounded text-sm">
                 <strong>Notes:</strong> {bookmark.notes}
               </div>
             )}
             {tags.length > 0 && (
-              <div className="mt-2 flex gap-1 flex-wrap">
+              <div className="mt-3 flex gap-1.5 flex-wrap">
                 {tags.map((tag: string, i: number) => (
-                  <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+                  <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">
                     {tag}
                   </span>
                 ))}
@@ -293,13 +296,13 @@ export default function BookmarksList() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => startEdit(bookmark)}
-                className="px-3 py-1 text-sm border rounded hover:bg-gray-100 text-gray-700"
+                className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-800"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(bookmark.id)}
-                className="px-3 py-1 text-sm text-white rounded"
+                className="px-3 py-1.5 text-sm text-white rounded-lg"
                 style={{ backgroundColor: '#E8083E' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C70735'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E8083E'}
@@ -329,7 +332,7 @@ export default function BookmarksList() {
             />
             <button
               onClick={handleCreateCategory}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm"
             >
               Create
             </button>
@@ -338,7 +341,7 @@ export default function BookmarksList() {
                 setShowNewCategory(false);
                 setNewCategoryName("");
               }}
-              className="px-4 py-2 border rounded hover:bg-gray-100 text-gray-700"
+              className="px-4 py-2 border rounded-lg hover:bg-gray-100 text-gray-700"
             >
               Cancel
             </button>
@@ -346,7 +349,7 @@ export default function BookmarksList() {
         ) : (
           <button
             onClick={() => setShowNewCategory(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm"
           >
             + New Category
           </button>
@@ -355,14 +358,14 @@ export default function BookmarksList() {
 
       {/* Uncategorized */}
       {uncategorized.length > 0 && (
-        <div className="border rounded-lg bg-white shadow-sm">
-          <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+        <div className="border rounded-xl hero-panel shadow-sm">
+          <div className="px-4 py-3 flex items-center justify-between hover:bg-slate-800/50">
             <button
               onClick={() => toggleCategory(null)}
               className="flex-1 flex items-center justify-between"
             >
-              <span className="font-medium text-lg text-gray-800">Uncategorized ({uncategorized.length})</span>
-              <span className="text-2xl ml-2 text-gray-700">{expandedCategories.has(null) ? "−" : "+"}</span>
+              <span className="font-medium text-lg text-slate-100">Uncategorized ({uncategorized.length})</span>
+              <span className="text-2xl ml-2 text-slate-300">{expandedCategories.has(null) ? "−" : "+"}</span>
             </button>
           </div>
           {expandedCategories.has(null) && (
@@ -373,8 +376,8 @@ export default function BookmarksList() {
 
       {/* Categorized */}
       {categorizedBookmarks.map(({ category, bookmarks: catBookmarks }) => (
-        <div key={category.id} className="border rounded-lg bg-white shadow-sm">
-          <div className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+        <div key={category.id} className="border rounded-xl hero-panel shadow-sm">
+          <div className="px-4 py-3 flex items-center justify-between hover:bg-slate-800/50">
             <button
               onClick={() => toggleCategory(category.id)}
               className="flex-1 flex items-center justify-between"
@@ -393,15 +396,15 @@ export default function BookmarksList() {
                       setEditCategoryName("");
                     }
                   }}
-                  className="font-medium text-lg px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  className="font-medium text-lg px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 bg-white"
                   autoFocus
                 />
               ) : (
-                <span className="font-medium text-lg text-gray-800">
+                <span className="font-medium text-lg text-slate-100">
                   {category.name} ({catBookmarks.length})
                 </span>
               )}
-              <span className="text-2xl ml-2 text-gray-700">{expandedCategories.has(category.id) ? "−" : "+"}</span>
+              <span className="text-2xl ml-2 text-slate-300">{expandedCategories.has(category.id) ? "−" : "+"}</span>
             </button>
             <div className="flex gap-2 ml-2">
               {editingCategory === category.id ? (

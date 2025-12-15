@@ -62,28 +62,38 @@ export default async function Page({
   // For bookmarks view, render client component
   if (view === "bookmarks") {
     return (
-      <main className="p-6 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">URLhaus Data Browser</h1>
+      <main className="px-6 py-10 max-w-6xl mx-auto space-y-8">
+        <section className="hero-panel p-6 md:p-8 text-white">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-2">
+              <p className="muted-label text-slate-200">Collection</p>
+              <h1 className="text-3xl font-bold">URLhaus Data Browser</h1>
+              <p className="text-slate-200 max-w-2xl">
+                Curate, categorize, and revisit malicious URLs you care about. Toggle below to switch views.
+              </p>
+            </div>
+            <div className="pill-toggle bg-white/15">
+              <Link
+                href={`/?view=bookmarks&page=1`}
+                className="bg-white text-slate-900 shadow-sm"
+              >
+                My Bookmarks
+              </Link>
+              <Link
+                href={`/?view=urls&page=1`}
+                className="text-white/80 hover:text-white"
+              >
+                Recent URLs
+              </Link>
+            </div>
+          </div>
+        </section>
 
-        {/* View Toggle */}
-        <div className="flex gap-2 mb-6 border-b">
-          <Link
-            href={`/?view=bookmarks&page=1`}
-            className="px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600"
-          >
-            My Bookmarks
-          </Link>
-          <Link
-            href={`/?view=urls&page=1`}
-            className="px-4 py-2 font-medium text-gray-600 hover:text-gray-900"
-          >
-            Recent URLs
-          </Link>
-        </div>
-
-        <Suspense fallback={<div className="text-center py-8">Loading bookmarks...</div>}>
-          <BookmarksList />
-        </Suspense>
+        <section className="hero-panel p-4 md:p-6 text-white">
+          <Suspense fallback={<div className="text-center py-8">Loading bookmarks...</div>}>
+            <BookmarksList />
+          </Suspense>
+        </section>
       </main>
     );
   }
@@ -147,61 +157,92 @@ export default async function Page({
   const hasNext = items.length > end || items.length >= fetchLimit;
   const hasPrev = page > 1;
   const totalPages = Math.ceil(items.length / pageSize);
+  const stats = [
+    { label: "Loaded", value: items.length.toString() },
+    { label: "Showing", value: displayItems.length.toString() },
+    { label: "Page", value: `${page}${totalPages ? ` / ~${totalPages}` : ""}` },
+  ];
 
   return (
-    <main className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">URLhaus Data Browser</h1>
-
-      {/* Search Bar */}
-      <Suspense fallback={<div className="h-12 bg-gray-100 rounded mb-6 animate-pulse"></div>}>
-        <SearchForm />
-      </Suspense>
-
-      {/* View Toggle */}
-      <div className="flex gap-2 mb-6 border-b">
-        <Link
-          href={`/?view=bookmarks&page=1`}
-          className="px-4 py-2 font-medium text-gray-600 hover:text-gray-900"
-        >
-          My Bookmarks
-        </Link>
-        <Link
-          href={`/?view=urls&page=1`}
-          className="px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600"
-        >
-          Recent URLs
-        </Link>
-      </div>
-
-      {/* Page Indicator */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          {searchQuery && (
-            <span className="mr-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-              Searching: "{searchQuery}"
-            </span>
-          )}
-          Page {page} {totalPages > 0 && `of ~${totalPages}`} • Showing {displayItems.length} of {items.length} entries
-          {searchQuery && items.length === 0 && (
-            <span className="ml-2 text-orange-600">No matches found</span>
-          )}
+    <main className="px-6 py-10 max-w-6xl mx-auto space-y-8">
+      <section className="hero-panel p-6 md:p-8 text-white">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-2">
+              <p className="muted-label text-slate-200">Live Feed</p>
+              <h1 className="text-3xl font-bold">URLhaus Data Browser</h1>
+              <p className="text-slate-200 max-w-2xl">
+                Inspect the latest malicious URLs, filter by text, sort by key fields, and bookmark what matters.
+              </p>
+            </div>
+            <div className="pill-toggle bg-white/15">
+              <Link
+                href={`/?view=bookmarks&page=1`}
+                className="text-white/80 hover:text-white"
+              >
+                My Bookmarks
+              </Link>
+              <Link
+                href={`/?view=urls&page=1`}
+                className="bg-white text-slate-900 shadow-sm"
+              >
+                Recent URLs
+              </Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-slate-100">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-white/20 bg-white/5 px-4 py-3">
+                <p className="text-xs uppercase tracking-wide text-slate-200/80">{stat.label}</p>
+                <p className="text-xl font-semibold">{stat.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        
-        {/* Sort Dropdown */}
-        <Suspense fallback={<div className="h-8 w-48 bg-gray-100 rounded animate-pulse"></div>}>
-          <SortDropdown currentSort={sortBy} />
+      </section>
+
+      <section className="hero-panel p-4 md:p-6 space-y-6 text-white">
+        {/* Search Bar */}
+        <Suspense fallback={<div className="h-12 bg-gray-100 rounded mb-6 animate-pulse"></div>}>
+          <SearchForm />
         </Suspense>
-      </div>
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="text-sm text-slate-100">
+            {searchQuery && (
+              <span className="mr-2 px-2 py-1 bg-blue-900/50 text-blue-200 rounded text-xs font-semibold">
+                Searching: "{searchQuery}"
+              </span>
+            )}
+            Page {page} {totalPages > 0 && `of ~${totalPages}`} • Showing {displayItems.length} of {items.length} entries
+            {searchQuery && items.length === 0 && (
+              <span className="ml-2 text-orange-300">No matches found</span>
+            )}
+          </div>
+
+          {/* Sort Dropdown */}
+          <Suspense fallback={<div className="h-8 w-48 bg-gray-100 rounded animate-pulse"></div>}>
+            <SortDropdown currentSort={sortBy} />
+          </Suspense>
+        </div>
 
       {displayItems.length === 0 ? (
         <div className="mt-4 text-gray-500">No data available.</div>
       ) : (
         <div className="space-y-4">
           {displayItems.map((u: any, idx: number) => (
-            <div key={idx} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <div
+              key={idx}
+              className="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all"
+            >
               <div className="flex items-start justify-between mb-2">
                 <div className="font-mono text-sm break-all flex-1">
-                  <a href={u.url ?? "#"} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  <a
+                    href={u.url ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-700 hover:underline"
+                  >
                     {u.url ?? "—"}
                   </a>
                 </div>
@@ -221,21 +262,30 @@ export default async function Page({
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 mt-3">
-                <div>
-                  <strong>Threat:</strong>{" "}
+              <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 mt-3">
+                <div className="flex items-center gap-2">
+                  <span className="muted-label">Threat</span>
                   <span className={`px-2 py-0.5 text-xs rounded border ${getThreatColor(u.threat)}`}>
                     {getThreatLabel(u.threat)}
                   </span>
                 </div>
-                <div><strong>Reporter:</strong> {u.reporter ?? "—"}</div>
-                <div><strong>First seen:</strong> {u.dateadded ?? u.date_added ?? "—"}</div>
-                <div><strong>Blacklists:</strong> {u.blacklists?.spamhaus_dbl ?? "—"}</div>
+                <div className="flex items-center gap-2">
+                  <span className="muted-label">Reporter</span>
+                  <span>{u.reporter ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="muted-label">First seen</span>
+                  <span>{u.dateadded ?? u.date_added ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="muted-label">Blacklists</span>
+                  <span>{u.blacklists?.spamhaus_dbl ?? "—"}</span>
+                </div>
               </div>
               {u.tags && u.tags.length > 0 && (
-                <div className="mt-2 flex gap-1 flex-wrap">
+                <div className="mt-3 flex gap-1.5 flex-wrap">
                   {u.tags.map((tag: string, i: number) => (
-                    <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+                    <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">
                       {tag}
                     </span>
                   ))}
@@ -252,7 +302,7 @@ export default async function Page({
           href={hasPrev ? `/?view=${view}&page=${page - 1}` : "#"}
           className={`px-4 py-2 rounded border font-medium ${
             hasPrev
-              ? "bg-white hover:bg-gray-50 text-gray-700"
+              ? "bg-white hover:bg-slate-50 text-slate-700"
               : "opacity-40 cursor-not-allowed text-gray-400"
           }`}
           aria-disabled={!hasPrev}
@@ -268,7 +318,7 @@ export default async function Page({
           href={hasNext ? `/?view=${view}&page=${page + 1}` : "#"}
           className={`px-4 py-2 rounded border font-medium ${
             hasNext
-              ? "bg-white hover:bg-gray-50 text-gray-700"
+              ? "bg-white hover:bg-slate-50 text-slate-700"
               : "opacity-40 cursor-not-allowed text-gray-400"
           }`}
           aria-disabled={!hasNext}
@@ -276,6 +326,7 @@ export default async function Page({
           Next →
         </Link>
       </div>
+      </section>
     </main>
   );
 }
