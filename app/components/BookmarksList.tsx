@@ -1,7 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { getThreatColor, getThreatLabel } from "@/lib/threatColors";
+import {
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Edit2,
+  Trash2,
+  Save,
+  X,
+  FolderPlus,
+  Shield,
+  User,
+  Calendar,
+  Bookmark as BookmarkIcon,
+  AlertCircle,
+  ExternalLink,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Bookmark {
   id: number;
@@ -182,7 +211,12 @@ export default function BookmarksList() {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-600">Loading bookmarks...</div>;
+    return (
+      <div className="text-center py-12 text-slate-300 dark:text-slate-400">
+        <div className="inline-block animate-spin rounded-full size-8 border-4 border-slate-300 dark:border-slate-600 border-t-transparent mb-4"></div>
+        <p>Loading bookmarks...</p>
+      </div>
+    );
   }
 
   const uncategorized = bookmarks.filter((b) => b.category_id === null);
@@ -195,14 +229,15 @@ export default function BookmarksList() {
 
   if (allEmpty) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p className="text-lg mb-2">No bookmarks yet</p>
-        <p className="text-sm">Switch to "Recent URLs" tab and bookmark some malicious URLs</p>
+      <div className="text-center py-12 text-slate-300 dark:text-slate-400">
+        <BookmarkIcon className="size-16 mx-auto mb-4 text-slate-400 dark:text-slate-500 opacity-50" />
+        <p className="text-lg font-medium mb-2">No bookmarks yet</p>
+        <p className="text-sm text-slate-400 dark:text-slate-500">Switch to &quot;Recent URLs&quot; tab and bookmark some malicious URLs</p>
       </div>
     );
   }
 
-  const renderBookmark = (bookmark: Bookmark) => {
+  const renderBookmark = (bookmark: Bookmark, index: number) => {
     let tags: string[] = [];
     try {
       const parsed = bookmark.tags ? JSON.parse(bookmark.tags) : [];
@@ -213,106 +248,152 @@ export default function BookmarksList() {
     const isEditing = editing === bookmark.id;
 
     return (
-      <div key={bookmark.id} className="border border-slate-200 rounded-xl p-4 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-        {isEditing ? (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Move to Category</label>
-              <select
-                value={editForm.category_id || ""}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, category_id: e.target.value ? Number(e.target.value) : null })
-                }
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Uncategorized</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleUpdate(bookmark.id)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Save
-              </button>
-              <button onClick={cancelEdit} className="px-4 py-2 border rounded hover:bg-gray-100 text-gray-700">
-                Cancel
-              </button>
-            </div>
+      <Card key={bookmark.id} className="bg-white/95 dark:bg-slate-800/95 hover:shadow-lg hover:-translate-y-1 transition-all border-slate-200 dark:border-slate-700 group relative overflow-hidden">
+        {/* Number badge */}
+        <div className="absolute top-4 left-4 z-10">
+          <div className="flex items-center justify-center size-9 rounded-lg bg-gradient-to-br from-slate-200/80 to-slate-100/60 dark:from-slate-700/80 dark:to-slate-600/60 border-2 border-slate-300/60 dark:border-slate-500/60 text-slate-700 dark:text-slate-300 font-bold text-sm shadow-md backdrop-blur-sm">
+            <span className="drop-shadow-sm">#{index + 1}</span>
           </div>
-        ) : (
-          <>
-            <div className="flex items-start justify-between mb-2">
-              <div className="font-mono text-sm break-all flex-1 text-blue-600">
-                {bookmark.url}
+        </div>
+        <CardContent className="pt-6 pl-16">
+          {isEditing ? (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-foreground">Move to Category</label>
+                <Select
+                  value={editForm.category_id?.toString() || ""}
+                  onValueChange={(value) =>
+                    setEditForm({ ...editForm, category_id: value ? Number(value) : null })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Uncategorized</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <span
-                className={`ml-3 px-2 py-1 text-xs rounded ${
-                  bookmark.status === "online" ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {bookmark.status ?? "unknown"}
-              </span>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleUpdate(bookmark.id)}
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Save className="size-4" />
+                  Save
+                </Button>
+                <Button onClick={cancelEdit} variant="outline" size="sm" className="gap-2">
+                  <X className="size-4" />
+                  Cancel
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 mt-3">
-              <div className="flex items-center gap-2">
-                <span className="muted-label">Threat</span>
-                <span className={`px-2 py-0.5 text-xs rounded border ${getThreatColor(bookmark.threat)}`}>
-                  {getThreatLabel(bookmark.threat)}
-                </span>
+          ) : (
+            <>
+              {/* URL Header Section */}
+              <div className="mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <a
+                      href={bookmark.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-sm break-all text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors inline-flex items-center gap-2 group/link"
+                    >
+                      <span>{bookmark.url}</span>
+                      <ExternalLink className="size-3 opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0" />
+                    </a>
+                  </div>
+                  <Badge
+                    variant={bookmark.status === "online" ? "destructive" : "secondary"}
+                    className={cn(
+                      "shrink-0",
+                      bookmark.status === "online" 
+                        ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800" 
+                        : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                    )}
+                  >
+                    {bookmark.status ?? "unknown"}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="muted-label">Reporter</span>
-                <span>{bookmark.reporter ?? "—"}</span>
+
+              {/* Metadata Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                  <Shield className="size-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground font-medium text-xs uppercase tracking-wide">Threat</span>
+                  <Badge className={`${getThreatColor(bookmark.threat)} border ml-auto`}>
+                    {getThreatLabel(bookmark.threat)}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                  <User className="size-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground font-medium text-xs uppercase tracking-wide">Reporter</span>
+                  <span className="text-foreground font-medium ml-auto">{bookmark.reporter ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                  <Calendar className="size-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground font-medium text-xs uppercase tracking-wide">First seen</span>
+                  <span className="text-foreground font-medium ml-auto">{bookmark.date_added ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                  <BookmarkIcon className="size-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground font-medium text-xs uppercase tracking-wide">Bookmarked</span>
+                  <span className="text-foreground font-medium ml-auto">{new Date(bookmark.created_at).toLocaleDateString()}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="muted-label">First seen</span>
-                <span>{bookmark.date_added ?? "—"}</span>
+              {bookmark.notes && (
+                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800/50 rounded-lg text-sm">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="size-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <strong className="text-amber-900 dark:text-amber-200">Notes:</strong>
+                      <p className="text-amber-800 dark:text-amber-300 mt-1">{bookmark.notes}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {tags.length > 0 && (
+                <div className="mt-4 flex gap-1.5 flex-wrap">
+                  {tags.map((tag: string, i: number) => (
+                    <Badge key={i} variant="outline" className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <Separator className="my-4" />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => startEdit(bookmark)}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Edit2 className="size-4" />
+                  Edit
+                </Button>
+                <Button
+                  onClick={() => handleDelete(bookmark.id)}
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="muted-label">Bookmarked</span>
-                <span>{new Date(bookmark.created_at).toLocaleDateString()}</span>
-              </div>
-            </div>
-            {bookmark.notes && (
-              <div className="mt-2 p-2 bg-amber-50 border border-amber-100 rounded text-sm">
-                <strong>Notes:</strong> {bookmark.notes}
-              </div>
-            )}
-            {tags.length > 0 && (
-              <div className="mt-3 flex gap-1.5 flex-wrap">
-                {tags.map((tag: string, i: number) => (
-                  <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => startEdit(bookmark)}
-                className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-800"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(bookmark.id)}
-                className="px-3 py-1.5 text-sm text-white rounded-lg"
-                style={{ backgroundColor: '#E8083E' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C70735'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E8083E'}
-              >
-                Delete
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     );
   };
 
@@ -322,148 +403,201 @@ export default function BookmarksList() {
       <div className="flex gap-2">
         {showNewCategory ? (
           <div className="flex-1 flex gap-2">
-            <input
+            <Input
               type="text"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder="Category name..."
-              className="flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1"
               onKeyDown={(e) => e.key === "Enter" && handleCreateCategory()}
+              autoFocus
             />
-            <button
+            <Button
               onClick={handleCreateCategory}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm"
+              size="default"
+              className="gap-2"
             >
+              <Save className="size-4" />
               Create
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => {
                 setShowNewCategory(false);
                 setNewCategoryName("");
               }}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-100 text-gray-700"
+              variant="outline"
+              size="default"
+              className="gap-2"
             >
+              <X className="size-4" />
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
-          <button
+          <Button
             onClick={() => setShowNewCategory(true)}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm"
+            size="default"
+            className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            + New Category
-          </button>
+            <FolderPlus className="size-4" />
+            New Category
+          </Button>
         )}
       </div>
 
       {/* Uncategorized */}
       {uncategorized.length > 0 && (
-        <div className="border rounded-xl hero-panel shadow-sm">
-          <div className="px-4 py-3 flex items-center justify-between hover:bg-slate-800/50">
-            <button
-              onClick={() => toggleCategory(null)}
-              className="flex-1 flex items-center justify-between"
-            >
-              <span className="font-medium text-lg text-slate-100">Uncategorized ({uncategorized.length})</span>
-              <span className="text-2xl ml-2 text-slate-300">{expandedCategories.has(null) ? "−" : "+"}</span>
-            </button>
-          </div>
-          {expandedCategories.has(null) && (
-            <div className="p-4 space-y-3 border-t">{uncategorized.map(renderBookmark)}</div>
+        <Card className="hero-panel border-0">
+          <CardHeader className="pb-0 py-4">
+            <div className="flex items-center justify-between min-h-[2.5rem]">
+              <Button
+                onClick={() => toggleCategory(null)}
+                variant="ghost"
+                className="flex-1 justify-between items-center p-0 h-auto hover:bg-transparent text-slate-900 dark:text-white"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center size-10 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-400/10 dark:from-emerald-500/30 dark:to-emerald-400/20 border-2 border-emerald-500/50 dark:border-emerald-400/60 text-emerald-700 dark:text-emerald-300 font-bold text-base shadow-lg backdrop-blur-sm ring-2 ring-emerald-500/20 dark:ring-emerald-400/30 shrink-0">
+                    <span className="drop-shadow-sm">1</span>
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Uncategorized ({uncategorized.length})
+                  </CardTitle>
+                </div>
+                {expandedCategories.has(null) ? (
+                  <ChevronUp className="size-5 text-slate-600 dark:text-slate-400 shrink-0" />
+                ) : (
+                  <ChevronDown className="size-5 text-slate-600 dark:text-slate-400 shrink-0" />
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+              {expandedCategories.has(null) && (
+            <>
+              <Separator className="bg-slate-200 dark:bg-slate-700/50 my-4" />
+              <CardContent className="space-y-4">
+                {uncategorized.map((bookmark, index) => renderBookmark(bookmark, index))}
+              </CardContent>
+            </>
           )}
-        </div>
+        </Card>
       )}
 
       {/* Categorized */}
-      {categorizedBookmarks.map(({ category, bookmarks: catBookmarks }) => (
-        <div key={category.id} className="border rounded-xl hero-panel shadow-sm">
-          <div className="px-4 py-3 flex items-center justify-between hover:bg-slate-800/50">
-            <button
-              onClick={() => toggleCategory(category.id)}
-              className="flex-1 flex items-center justify-between"
-            >
-              {editingCategory === category.id ? (
-                <input
-                  type="text"
-                  value={editCategoryName}
-                  onChange={(e) => setEditCategoryName(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => {
-                    e.stopPropagation();
-                    if (e.key === "Enter") handleUpdateCategory(category.id);
-                    if (e.key === "Escape") {
-                      setEditingCategory(null);
-                      setEditCategoryName("");
-                    }
-                  }}
-                  className="font-medium text-lg px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 bg-white"
-                  autoFocus
-                />
-              ) : (
-                <span className="font-medium text-lg text-slate-100">
-                  {category.name} ({catBookmarks.length})
-                </span>
-              )}
-              <span className="text-2xl ml-2 text-slate-300">{expandedCategories.has(category.id) ? "−" : "+"}</span>
-            </button>
-            <div className="flex gap-2 ml-2">
-              {editingCategory === category.id ? (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleUpdateCategory(category.id);
-                    }}
-                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingCategory(null);
-                      setEditCategoryName("");
-                    }}
-                    className="px-3 py-1 text-sm border rounded hover:bg-gray-100 text-gray-700"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingCategory(category.id);
-                      setEditCategoryName(category.name);
-                    }}
-                    className="w-8 h-8 flex items-center justify-center text-sm border rounded hover:bg-gray-100 text-gray-700"
-                    title="Edit category name"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteCategory(category.id);
-                    }}
-                    className="w-8 h-8 flex items-center justify-center text-sm text-white rounded"
-                    style={{ backgroundColor: '#E8083E' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C70735'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E8083E'}
-                    title="Delete category"
-                  >
-                    🗑️
-                  </button>
-                </>
-              )}
+      {categorizedBookmarks.map(({ category, bookmarks: catBookmarks }, categoryIndex) => {
+        const categoryNumber = uncategorized.length > 0 ? categoryIndex + 2 : categoryIndex + 1;
+        return (
+        <Card key={category.id} className="hero-panel border-0">
+          <CardHeader className="pb-0 py-4">
+            <div className="flex items-center justify-between gap-2 min-h-[2.5rem]">
+              <Button
+                onClick={() => toggleCategory(category.id)}
+                variant="ghost"
+                className="flex-1 justify-between items-center p-0 h-auto hover:bg-transparent text-slate-900 dark:text-white"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center size-10 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-400/10 dark:from-emerald-500/30 dark:to-emerald-400/20 border-2 border-emerald-500/50 dark:border-emerald-400/60 text-emerald-700 dark:text-emerald-300 font-bold text-base shadow-lg backdrop-blur-sm ring-2 ring-emerald-500/20 dark:ring-emerald-400/30 shrink-0">
+                    <span className="drop-shadow-sm">{categoryNumber}</span>
+                  </div>
+                  {editingCategory === category.id ? (
+                    <Input
+                      type="text"
+                      value={editCategoryName}
+                      onChange={(e) => setEditCategoryName(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === "Enter") handleUpdateCategory(category.id);
+                        if (e.key === "Escape") {
+                          setEditingCategory(null);
+                          setEditCategoryName("");
+                        }
+                      }}
+                      className="text-lg font-semibold text-foreground bg-white dark:bg-slate-800"
+                      autoFocus
+                    />
+                  ) : (
+                    <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                      {category.name} ({catBookmarks.length})
+                    </CardTitle>
+                  )}
+                </div>
+                {expandedCategories.has(category.id) ? (
+                  <ChevronUp className="size-5 text-slate-600 dark:text-slate-400 shrink-0" />
+                ) : (
+                  <ChevronDown className="size-5 text-slate-600 dark:text-slate-400 shrink-0" />
+                )}
+              </Button>
+              <div className="flex gap-2 items-center">
+                {editingCategory === category.id ? (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUpdateCategory(category.id);
+                      }}
+                      size="sm"
+                      className="gap-2 bg-green-600 hover:bg-green-700"
+                    >
+                      <Save className="size-4" />
+                      Save
+                    </Button>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingCategory(null);
+                        setEditCategoryName("");
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <X className="size-4" />
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingCategory(category.id);
+                        setEditCategoryName(category.name);
+                      }}
+                      variant="ghost"
+                      size="icon"
+                      className="text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20"
+                      title="Edit category name"
+                    >
+                      <Edit2 className="size-4" />
+                    </Button>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCategory(category.id);
+                      }}
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-300"
+                      title="Delete category"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          </CardHeader>
           {expandedCategories.has(category.id) && catBookmarks.length > 0 && (
-            <div className="p-4 space-y-3 border-t">{catBookmarks.map(renderBookmark)}</div>
+            <>
+              <Separator className="bg-slate-200 dark:bg-slate-700/50 my-4" />
+              <CardContent className="space-y-4">
+                {catBookmarks.map((bookmark, index) => renderBookmark(bookmark, index))}
+              </CardContent>
+            </>
           )}
-        </div>
-      ))}
+        </Card>
+        );
+      })}
     </div>
   );
 }

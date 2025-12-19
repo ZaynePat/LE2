@@ -1,6 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ArrowUpDown } from "lucide-react";
 
 export default function SortDropdown({ currentSort }: { currentSort: string }) {
   const router = useRouter();
@@ -15,17 +23,18 @@ export default function SortDropdown({ currentSort }: { currentSort: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm font-semibold text-slate-700">Sort by:</label>
-      <select
-        value={currentSort}
-        onChange={(e) => handleSortChange(e.target.value)}
-        className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 bg-white shadow-sm"
-      >
-        <option value="date">Date Added (Newest)</option>
-        <option value="threat">Threat Type</option>
-        <option value="reporter">Reporter</option>
-        <option value="url">URL (A-Z)</option>
-      </select>
+      <Select value={currentSort} onValueChange={handleSortChange}>
+        <SelectTrigger className="w-[200px] h-9">
+          <ArrowUpDown className="size-4 mr-2" />
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="date">Date Added (Newest)</SelectItem>
+          <SelectItem value="threat">Threat Type</SelectItem>
+          <SelectItem value="reporter">Reporter</SelectItem>
+          <SelectItem value="url">URL (A-Z)</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

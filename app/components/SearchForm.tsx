@@ -2,6 +2,9 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
 
 export default function SearchForm() {
   const router = useRouter();
@@ -34,28 +37,29 @@ export default function SearchForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by URL, threat, reporter..."
-        className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <button
-        type="submit"
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-      >
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by URL, threat, reporter..."
+          className="pl-9 pr-9 h-10"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="size-4" />
+          </button>
+        )}
+      </div>
+      <Button type="submit" size="default">
+        <Search className="size-4" />
         Search
-      </button>
-      {query && (
-        <button
-          type="button"
-          onClick={handleClear}
-          className="px-4 py-2 border rounded-lg hover:bg-gray-100 font-medium"
-        >
-          Clear
-        </button>
-      )}
+      </Button>
     </form>
   );
 }
